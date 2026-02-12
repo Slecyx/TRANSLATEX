@@ -311,8 +311,14 @@ def main():
                 time.sleep(0.3)
                 
                 # Save uploaded file
+                
+                # Use a local directory for temp files to ensure Flatpak compatibility
+                # (Flatpak's /tmp is isolated from host /tmp)
+                temp_dir = os.path.join(os.getcwd(), "temp_processing")
+                os.makedirs(temp_dir, exist_ok=True)
+                
                 file_ext = uploaded_file.name.split('.')[-1].lower()
-                with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_ext}") as tmp_file:
+                with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_ext}", dir=temp_dir) as tmp_file:
                     tmp_file.write(uploaded_file.getvalue())
                     input_path = tmp_file.name
                 
