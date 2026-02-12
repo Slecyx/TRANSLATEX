@@ -1,5 +1,7 @@
 import subprocess
 import os
+from pptx import Presentation
+from .translator import translate_text
 
 def convert_pptx_to_pdf(pptx_path: str, output_pdf_path: str):
     """Converts a PPTX file to PDF using LibreOffice."""
