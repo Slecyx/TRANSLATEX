@@ -4,6 +4,7 @@ import tempfile
 import traceback
 import time
 import base64
+from datetime import datetime
 from utils.pptx_handler import translate_pptx, convert_pptx_to_pdf
 from utils.pdf_handler import translate_pdf
 from utils.docx_handler import translate_docx
@@ -13,10 +14,23 @@ from utils.xlsx_handler import translate_xlsx
 # --- Cloud Config ---
 st.set_page_config(
     page_title="TranslateX Prime | AI Suite",
-    page_icon="�",
+    page_icon="🌌",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
+
+# --- Session State for Mission Log ---
+if 'history' not in st.session_state:
+    st.session_state['history'] = []
+
+def add_to_history(filename, lang, status, time_taken):
+    st.session_state['history'].insert(0, {
+        "time": datetime.now().strftime("%H:%M:%S"),
+        "file": filename,
+        "lang": lang,
+        "status": status,
+        "duration": f"{time_taken:.1f}s"
+    })
 
 # --- Hyper-Premium CSS ---
 def add_custom_css():
@@ -32,23 +46,22 @@ def add_custom_css():
                 linear-gradient(rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.9)),
                 url("https://www.transparenttextures.com/patterns/cubes.png");
             overflow-x: hidden;
+            font-family: 'Rajdhani', sans-serif;
         }
 
-        /* Moving Grid Animation (Pseudo-element) */
+        /* Moving Grid Animation */
         .stApp::before {
             content: "";
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 200vw;
-            height: 200vh;
+            top: 0; left: 0; width: 200vw; height: 200vh;
             background: 
-                linear-gradient(transparent 0%, rgba(0, 255, 255, 0.05) 50%, transparent 100%),
-                linear-gradient(90deg, transparent 0%, rgba(255, 0, 255, 0.05) 50%, transparent 100%);
+                linear-gradient(transparent 0%, rgba(0, 255, 255, 0.03) 50%, transparent 100%),
+                linear-gradient(90deg, transparent 0%, rgba(255, 0, 255, 0.03) 50%, transparent 100%);
             background-size: 100px 100px;
             animation: moveGrid 20s linear infinite;
             z-index: -1;
             transform: perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px);
+            pointer-events: none;
         }
 
         @keyframes moveGrid {
@@ -63,24 +76,20 @@ def add_custom_css():
             letter-spacing: 2px;
         }
 
-        p, div, label, button {
-            font-family: 'Rajdhani', sans-serif !important;
-        }
-
         /* === HERO SECTION === */
         .hero-container {
             text-align: center;
-            padding: 4rem 1rem;
+            padding: 3rem 1rem;
             position: relative;
         }
         
         .hero-title {
-            font-size: 5rem;
+            font-size: 4.5rem;
             background: linear-gradient(to right, #00c6ff, #0072ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-shadow: 0px 0px 20px rgba(0, 198, 255, 0.5);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0px;
             animation: glow 3s ease-in-out infinite alternate;
         }
 
@@ -90,97 +99,93 @@ def add_custom_css():
         }
 
         .hero-subtitle {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             color: #a0a0ba;
-            letter-spacing: 1px;
+            letter-spacing: 3px;
             margin-top: -10px;
+            opacity: 0.8;
         }
 
         /* === GLASS CARD === */
         .glass-card {
-            background: rgba(10, 10, 20, 0.6);
+            background: rgba(10, 10, 20, 0.7);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(0, 255, 255, 0.1);
             border-radius: 16px;
-            padding: 2.5rem;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            padding: 2rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
             transition: all 0.4s ease;
-        }
-
-        .glass-card:hover {
-            border-color: rgba(0, 255, 255, 0.4);
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.15);
-            transform: translateY(-5px);
+            margin-bottom: 2rem;
         }
 
         /* === FILE UPLOADER === */
         .stFileUploader {
-            border: 2px dashed rgba(0, 255, 255, 0.2);
-            border-radius: 12px;
-            padding: 20px;
-            transition: all 0.3s;
-        }
-        .stFileUploader:hover {
-            border-color: #00c6ff;
-            background: rgba(0, 198, 255, 0.05);
+            border: 1px dashed rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
         }
 
         /* === BUTTONS === */
         .stButton > button {
             background: transparent;
-            border: 2px solid #00c6ff;
+            border: 1px solid #00c6ff;
             color: #00c6ff;
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: 700;
-            padding: 0.8rem 2rem;
-            border-radius: 0;
+            padding: 0.6rem 2rem;
+            border-radius: 4px;
             transition: all 0.3s ease;
             text-transform: uppercase;
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-        }
-
-        .stButton > button::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; width: 0; height: 100%;
-            background: #00c6ff;
-            transition: all 0.3s ease;
-            z-index: -1;
-        }
-
-        .stButton > button:hover::before {
             width: 100%;
+            letter-spacing: 1px;
         }
 
         .stButton > button:hover {
-            color: black;
-            box-shadow: 0 0 20px rgba(0, 198, 255, 0.6);
+            background: rgba(0, 198, 255, 0.1);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(0, 198, 255, 0.4);
+            border-color: #fff;
         }
 
         /* === DOWNLOAD BUTTON === */
         .stDownloadButton > button {
-            background: linear-gradient(45deg, #ff0099, #493240);
+            background: linear-gradient(90deg, #ff0099, #493240);
             border: none;
             color: white;
-            font-size: 1.1rem;
+            font-size: 1rem;
             padding: 0.8rem 2rem;
-            border-radius: 30px;
-            box-shadow: 0 4px 15px rgba(255, 0, 153, 0.4);
-            transition: transform 0.2s;
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(255, 0, 153, 0.2);
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         .stDownloadButton > button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(255, 0, 153, 0.6);
+            box-shadow: 0 0 20px rgba(255, 0, 153, 0.6);
+            color: #fff;
         }
 
-        /* === STATUS & ALERTS === */
-        .stSuccess, .stInfo, .stWarning, .stError {
-            background: rgba(0, 0, 0, 0.8) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        /* === LOG TABLE === */
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: #a0a0ba;
+            font-size: 0.9rem;
         }
+        .log-table th {
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+            padding: 8px;
+            color: #00c6ff;
+        }
+        .log-table td {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 8px;
+        }
+        .log-status-success { color: #00ff99; }
+        .log-status-fail { color: #ff0055; }
 
         /* Hiding Default Elements */
         #MainMenu, footer, header { visibility: hidden; }
@@ -191,127 +196,159 @@ def add_custom_css():
 def main():
     add_custom_css()
 
-    st.markdown('<div class="hero-container"><div class="hero-title">TRANSLATEX</div><div class="hero-subtitle">NEXT-GEN AI DOCUMENT LOCALIZATION SYSTEM</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-container"><div class="hero-title">TRANSLATEX</div><div class="hero-subtitle">SYSTEM VERSION 4.1 // READY</div></div>', unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns([1, 6, 1])
+    col1, col2 = st.columns([2, 1])
+
+    with col1:
+        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+        st.markdown("### 📥 DATA INGESTION")
+        
+        uploaded_file = st.file_uploader("DROP FILE HERE", type=["pdf", "pptx", "docx", "txt", "xlsx"])
+        
+        # Advanced Toggle for PPTX
+        convert_to_pdf_opt = False
+        if uploaded_file and uploaded_file.name.lower().endswith(".pptx"):
+            st.markdown("---")
+            convert_to_pdf_opt = st.checkbox("� RENDER PPTX AS PDF", value=False)
+        
+        st.markdown("</div>", unsafe_allow_html=True)
 
     with col2:
         st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-        st.markdown("### 🧬 INPUT SEQUENCE")
+        st.markdown("### ⚙️ PARAMETERS")
         
-        uploaded_file = st.file_uploader("DROP DATA PACKET HERE", type=["pdf", "pptx", "docx", "txt", "xlsx"])
+        lang_options = {
+            "tr": "🇹🇷 TURKISH", "en": "🇺🇸 ENGLISH", "de": "🇩🇪 GERMAN", 
+            "fr": "🇫🇷 FRENCH", "es": "🇪🇸 SPANISH", "it": "🇮🇹 ITALIAN", 
+            "ru": "🇷🇺 RUSSIAN", "ar": "🇸🇦 ARABIC", "ja": "🇯🇵 JAPANESE", "ko": "🇰🇷 KOREAN"
+        }
         
-        cols = st.columns([2, 1])
-        with cols[0]:
-            if uploaded_file:
-                st.info(f"💾 PACKET DETECTED: {uploaded_file.name}")
-        
-        with cols[1]:
-            target_language = st.selectbox(
-                "TARGET SYNTAX",
-                options=["tr", "en", "de", "fr", "es", "it", "ru", "ar", "ja", "ko"],
-                format_func=lambda x: x.upper()
-            )
-
-        # Advanced Toggle
-        convert_to_pdf_opt = False
-        if uploaded_file and uploaded_file.name.endswith(".pptx"):
-            st.markdown("---")
-            convert_to_pdf_opt = st.checkbox("💠 RENDER AS PDF ARTIFACT", value=False)
+        target_language = st.selectbox(
+            "TARGET SYNTAX",
+            options=list(lang_options.keys()),
+            format_func=lambda x: lang_options[x]
+        )
         
         st.markdown("<br>", unsafe_allow_html=True)
         
         if uploaded_file:
-            if st.button("INITIALIZE TRANSLATION PROTOCOL"):
-                
-                progress_bar = st.progress(0)
-                status_text = st.empty()
-                
-                try:
-                    # Simulation of tech processes
-                    status_text.text("⚡ ESTABLISHING NEURAL LINK...")
-                    time.sleep(0.5)
-                    progress_bar.progress(10)
-                    
-                    status_text.text("📂 PARSING MOLECULAR STRUCTURE...")
-                    
-                    # Save uploaded file
-                    file_ext = uploaded_file.name.split('.')[-1].lower()
-                    with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_ext}") as tmp_file:
-                        tmp_file.write(uploaded_file.getvalue())
-                        input_path = tmp_file.name
-                    
-                    output_path = input_path.replace(f".{file_ext}", f"_translated.{file_ext}")
-                    
-                    # Process
-                    status_text.text("🔄 DECODING & RE-ENCODING SYNTAX...")
-                    progress_bar.progress(30)
-                    
-                    if file_ext == "pptx":
-                        result_path = translate_pptx(input_path, output_path, target_language)
-                        if convert_to_pdf_opt:
-                             status_text.text("📄 RENDERING VISUAL ARTIFACT (PDF)...")
-                             pdf_path = output_path.replace('.pptx', '.pdf')
-                             converted_pdf = convert_pptx_to_pdf(result_path, pdf_path)
-                             if converted_pdf:
-                                 result_path = converted_pdf
-                    elif file_ext == "pdf":
-                        result_path = translate_pdf(input_path, output_path, target_language)
-                    elif file_ext == "docx":
-                        result_path = translate_docx(input_path, output_path, target_language)
-                    elif file_ext == "txt":
-                        result_path = translate_txt(input_path, output_path, target_language)
-                    elif file_ext == "xlsx":
-                         result_path = translate_xlsx(input_path, output_path, target_language)
-                    else:
-                        st.error("❌ UNKNOWN DATA FORMAT")
-                        return
-
-                    progress_bar.progress(90)
-                    status_text.text("✨ FINALIZING ARTIFACT...")
-                    time.sleep(0.5)
-                    progress_bar.progress(100)
-                    status_text.text("✅ OPERATION COMPLETE")
-
-                    # Download
-                    with open(result_path, "rb") as f:
-                        file_data = f.read()
-                        
-                    download_name = uploaded_file.name.replace(".", f"_{target_language}.")
-                    final_ext = result_path.split('.')[-1]
-                    if not download_name.endswith(f".{final_ext}"):
-                         download_name = ".".join(download_name.split('.')[:-1]) + f".{final_ext}"
-
-                    mime_type = "application/octet-stream"
-                    if final_ext == "pptx": mime_type = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-                    elif final_ext == "pdf": mime_type = "application/pdf"
-                    elif final_ext == "docx": mime_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                    elif final_ext == "xlsx": mime_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                    elif final_ext == "txt": mime_type = "text/plain"
-
-                    st.markdown("---")
-                    col_d1, col_d2, col_d3 = st.columns([1, 2, 1])
-                    with col_d2:
-                        st.download_button(
-                            label="⬇️ ACQUIRE TRANSLATED ASSET",
-                            data=file_data,
-                            file_name=download_name,
-                            mime=mime_type
-                        )
-                    
-                    st.balloons()
-
-                except Exception as e:
-                    st.error("⚠ SYSTEM CRITICAL FAILURE")
-                    st.code(traceback.format_exc())
-                finally:
-                    if 'input_path' in locals() and os.path.exists(input_path):
-                        os.remove(input_path)
-                    if 'result_path' in locals() and os.path.exists(result_path):
-                         os.remove(result_path)
-
+            process_btn = st.button("🚀 INITIATE SEQUENCE")
+        else:
+            st.button("� AWAITING INPUT", disabled=True)
+            process_btn = False
+            
         st.markdown("</div>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:center; color: #555; font-size: 0.8rem; margin-top: 2rem;'>SYSTEM VERSION 4.0 // SECURE CONNECTION</p>", unsafe_allow_html=True)
+
+    # Processing Logic
+    if process_btn and uploaded_file:
+        with st.empty():
+            st.markdown('<div class="glass-card" style="text-align:center;">Processing...</div>', unsafe_allow_html=True)
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+            
+            start_time = time.time()
+            try:
+                status_text.text("⚡ NEURAL LINK ESTABLISHED")
+                time.sleep(0.3)
+                progress_bar.progress(20)
+                
+                # Save uploaded file
+                file_ext = uploaded_file.name.split('.')[-1].lower()
+                with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_ext}") as tmp_file:
+                    tmp_file.write(uploaded_file.getvalue())
+                    input_path = tmp_file.name
+                
+                output_path = input_path.replace(f".{file_ext}", f"_translated.{file_ext}")
+                
+                # Translate
+                if file_ext == "pptx":
+                    result_path = translate_pptx(input_path, output_path, target_language)
+                    progress_bar.progress(60)
+                    if convert_to_pdf_opt:
+                            status_text.text("📄 COMPILLING PDF ARTIFACT...")
+                            pdf_path = output_path.replace('.pptx', '.pdf')
+                            converted_pdf = convert_pptx_to_pdf(result_path, pdf_path)
+                            if converted_pdf:
+                                result_path = converted_pdf
+                elif file_ext == "pdf":
+                    result_path = translate_pdf(input_path, output_path, target_language)
+                elif file_ext == "docx":
+                    result_path = translate_docx(input_path, output_path, target_language)
+                elif file_ext == "txt":
+                    result_path = translate_txt(input_path, output_path, target_language)
+                elif file_ext == "xlsx":
+                        result_path = translate_xlsx(input_path, output_path, target_language)
+                else:
+                    raise ValueError("Unsupported Format")
+
+                progress_bar.progress(100)
+                status_text.text("✅ SEQUENCE COMPLETE")
+                time.sleep(0.5)
+                
+                # Add to history
+                duration = time.time() - start_time
+                add_to_history(uploaded_file.name, target_language.upper(), "SUCCESS", duration)
+
+                # Prepare Download
+                with open(result_path, "rb") as f:
+                    file_data = f.read()
+                    
+                download_name = uploaded_file.name.replace(".", f"_{target_language}.")
+                final_ext = result_path.split('.')[-1]
+                if not download_name.endswith(f".{final_ext}"):
+                        download_name = ".".join(download_name.split('.')[:-1]) + f".{final_ext}"
+
+                mime_type = "application/octet-stream"
+                # (Mime types logic kept simple for brevity as browsers handle mostly well)
+                
+                # Display Result
+                st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+                col_res1, col_res2 = st.columns([3, 1])
+                with col_res1:
+                    st.success(f"TRANSLATED: {download_name}")
+                with col_res2:
+                    st.download_button(
+                        label="⬇️ DOWNLOAD",
+                        data=file_data,
+                        file_name=download_name,
+                        mime=mime_type
+                    )
+                st.markdown('</div>', unsafe_allow_html=True)
+                st.balloons()
+                
+            except Exception as e:
+                st.error("SEQUENCE FAILURE")
+                add_to_history(uploaded_file.name, target_language.upper(), "FAILED", time.time() - start_time)
+                st.code(traceback.format_exc())
+            finally:
+                if 'input_path' in locals() and os.path.exists(input_path): os.remove(input_path)
+                if 'result_path' in locals() and os.path.exists(result_path): os.remove(result_path)
+
+    # --- MISSION LOG ---
+    if st.session_state['history']:
+        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+        st.markdown("### 📜 MISSION LOG")
+        
+        table_html = '<table class="log-table"><thead><tr><th>TIME</th><th>FILE</th><th>LANG</th><th>STATUS</th><th>DURATION</th></tr></thead><tbody>'
+        
+        for item in st.session_state['history']:
+            status_class = "log-status-success" if item['status'] == "SUCCESS" else "log-status-fail"
+            table_html += f"<tr><td>{item['time']}</td><td>{item['file']}</td><td>{item['lang']}</td><td class='{status_class}'>{item['status']}</td><td>{item['duration']}</td></tr>"
+        
+        table_html += "</tbody></table>"
+        st.markdown(table_html, unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # Footer
+    st.markdown("<div style='text-align: center; color: #444; margin-top: 50px; font-size: 0.8em;'>SECURE TERMINAL ACCESS // ENCRYPTED</div>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
-    main()
+    try:
+        from streamlit.web import cli as stcli
+        import sys
+        sys.argv = ["streamlit", "run", __file__]
+        sys.exit(stcli.main())
+    except ImportError:
+        # Fallback if they manage to run this without streamlit installed (unlikely but safe)
+        print("Lütfen sanal ortamı (venv) kullanarak çalıştırın: ./run.sh")
