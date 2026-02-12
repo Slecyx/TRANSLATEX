@@ -323,7 +323,8 @@ def main():
                             if converted_pdf:
                                 result_path = converted_pdf
                 elif file_ext == "pdf":
-                    result_path = translate_pdf(input_path, output_path, target_language, progress_callback=update_progress)
+                    convert_to_pdf = (pdf_output_format == "PDF")
+                    result_path = translate_pdf(input_path, output_path, target_language, progress_callback=update_progress, convert_to_pdf=convert_to_pdf)
                 elif file_ext == "docx":
                     result_path = translate_docx(input_path, output_path, target_language, progress_callback=update_progress)
                 elif file_ext == "txt":

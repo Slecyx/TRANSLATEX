@@ -4,11 +4,12 @@ import subprocess
 import os
 from .translator import translate_text
 
-def translate_pdf(input_path: str, output_path: str, target_lang: str, progress_callback=None):
+def translate_pdf(input_path: str, output_path: str, target_lang: str, progress_callback=None, convert_to_pdf=True):
     """
     Translates a PDF file to the target language via DOCX conversion.
     Returns the path to the final output file (PDF if possible, else DOCX).
     """
+    # ... (previous code specific to DOCX conversion stays same) ...
     # Step 1: Convert PDF to DOCX
     docx_path = input_path.replace('.pdf', '.docx')
     if os.path.exists(docx_path):
@@ -54,6 +55,9 @@ def translate_pdf(input_path: str, output_path: str, target_lang: str, progress_
     translated_docx_path = output_path.replace('.pdf', '_translated.docx')
     doc.save(translated_docx_path)
     
+    if not convert_to_pdf:
+        return translated_docx_path
+
     # Step 3: Convert back to PDF using LibreOffice (if available)
     try:
         # Check if libreoffice is available
