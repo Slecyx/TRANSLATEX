@@ -270,6 +270,10 @@ def main():
                     status_text.text("⏳ PROCESSING...")
 
             try:
+                # Clear previous result
+                if 'latest_result' in st.session_state:
+                    del st.session_state['latest_result']
+
                 status_text.text("⚡ NEURAL LINK ESTABLISHED")
                 time.sleep(0.3)
                 
@@ -313,7 +317,7 @@ def main():
                 # Add to history
                 add_to_history(uploaded_file.name, target_language.upper(), "SUCCESS", total_duration)
 
-                # Prepare Download
+                # Prepare Download Data
                 with open(result_path, "rb") as f:
                     file_data = f.read()
                     
@@ -323,21 +327,14 @@ def main():
                         download_name = ".".join(download_name.split('.')[:-1]) + f".{final_ext}"
 
                 mime_type = "application/octet-stream"
-                # (Mime types logic kept simple for brevity as browsers handle mostly well)
                 
-                # Display Result
-                st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-                col_res1, col_res2 = st.columns([3, 1])
-                with col_res1:
-                    st.success(f"TRANSLATED: {download_name}")
-                with col_res2:
-                    st.download_button(
-                        label="⬇️ DOWNLOAD",
-                        data=file_data,
-                        file_name=download_name,
-                        mime=mime_type
-                    )
-                st.markdown('</div>', unsafe_allow_html=True)
+                # Store in session state for persistence
+                st.session_state['latest_result'] = {
+                    "data": file_data,
+                    "name": download_name,
+                    "mime": mime_type
+                }
+                
                 st.balloons()
                 
             except Exception as e:
@@ -347,6 +344,21 @@ def main():
             finally:
                 if 'input_path' in locals() and os.path.exists(input_path): os.remove(input_path)
                 if 'result_path' in locals() and os.path.exists(result_path): os.remove(result_path)
+
+    # --- PERSISTENT DOWNLOAD AREA ---
+    if 'latest_result' in st.session_state:
+        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+        col_res1, col_res2 = st.columns([3, 1])
+        with col_res1:
+            st.success(f"READY FOR EXTRACTION: {st.session_state['latest_result']['name']}")
+        with col_res2:
+            st.download_button(
+                label="⬇️ ACQUIRE ASSET",
+                data=st.session_state['latest_result']['data'],
+                file_name=st.session_state['latest_result']['name'],
+                mime=st.session_state['latest_result']['mime']
+            )
+        st.markdown('</div>', unsafe_allow_html=True)
 
     # --- MISSION LOG ---
     if st.session_state['history']:
