@@ -60,11 +60,26 @@ def translate_pdf(input_path: str, output_path: str, target_lang: str, progress_
 
     # Step 3: Convert back to PDF using LibreOffice (if available)
     try:
-        # Check if libreoffice is available
-        subprocess.run(['libreoffice', '--version'], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        lo_command = None
+        # Check system
+        try:
+            subprocess.run(['libreoffice', '--version'], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            lo_command = ['libreoffice']
+        except:
+             # Check flatpak
+            try:
+                subprocess.run(['flatpak', 'info', 'org.libreoffice.LibreOffice'], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                lo_command = ['flatpak', 'run', 'org.libreoffice.LibreOffice']
+            except:
+                pass
+
+        if not lo_command:
+             print("LibreOffice not found. Returning DOCX.")
+             return translated_docx_path
         
         # Convert to PDF
-        subprocess.run(['libreoffice', '--headless', '--convert-to', 'pdf', translated_docx_path, '--outdir', os.path.dirname(output_path)], check=True)
+        cmd = lo_command + ['--headless', '--convert-to', 'pdf', translated_docx_path, '--outdir', os.path.dirname(output_path)]
+        subprocess.run(cmd, check=True)
         
         # The output file will have same name as translated_docx_path but with .pdf estension
         expected_pdf_path = translated_docx_path.replace('.docx', '.pdf')
@@ -79,6 +94,6 @@ def translate_pdf(input_path: str, output_path: str, target_lang: str, progress_
              print("LibreOffice conversion failed silently, returning DOCX.")
              return translated_docx_path
 
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        print("LibreOffice not found or failed. Returning translated DOCX.")
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        print(f"LibreOffice conversion failed: {e}. Returning translated DOCX.")
         return translated_docx_path

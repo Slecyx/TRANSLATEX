@@ -225,7 +225,13 @@ def main():
         convert_to_pdf_opt = False
         if uploaded_file and uploaded_file.name.lower().endswith(".pptx"):
             st.markdown("---")
-            convert_to_pdf_opt = st.checkbox("� RENDER PPTX AS PDF", value=False)
+            convert_to_pdf_opt = st.checkbox("📄 RENDER PPTX AS PDF", value=False)
+
+        # Advanced Toggle for PDF
+        pdf_output_format = "DOCX"
+        if uploaded_file and uploaded_file.name.lower().endswith(".pdf"):
+            st.markdown("---")
+            pdf_output_format = st.radio("📄 OUTPUT FORMAT", ["DOCX", "PDF"], index=0, horizontal=True)
         
         st.markdown("</div>", unsafe_allow_html=True)
 

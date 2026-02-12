@@ -3,14 +3,37 @@ import os
 from pptx import Presentation
 from .translator import translate_text
 
+def get_libreoffice_command():
+    """Returns the available LibreOffice command (system or flatpak)."""
+    # Check system libreoffice
+    try:
+        subprocess.run(['libreoffice', '--version'], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return ['libreoffice']
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        pass
+
+    # Check flatpak libreoffice
+    try:
+        subprocess.run(['flatpak', 'info', 'org.libreoffice.LibreOffice'], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return ['flatpak', 'run', 'org.libreoffice.LibreOffice']
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        pass
+        
+    return None
+
 def convert_pptx_to_pdf(pptx_path: str, output_pdf_path: str):
     """Converts a PPTX file to PDF using LibreOffice."""
     try:
-        # Check if libreoffice is available
-        subprocess.run(['libreoffice', '--version'], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        lo_command = get_libreoffice_command()
+        if not lo_command:
+            print("LibreOffice not found (system or flatpak).")
+            return None
         
         output_dir = os.path.dirname(output_pdf_path)
-        subprocess.run(['libreoffice', '--headless', '--convert-to', 'pdf', pptx_path, '--outdir', output_dir], check=True)
+        
+        # Construct command
+        cmd = lo_command + ['--headless', '--convert-to', 'pdf', pptx_path, '--outdir', output_dir]
+        subprocess.run(cmd, check=True)
         
         # LibreOffice saves with the same basename but .pdf extension
         expected_output = pptx_path.replace('.pptx', '.pdf')
