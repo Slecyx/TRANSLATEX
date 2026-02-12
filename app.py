@@ -187,6 +187,21 @@ def add_custom_css():
         .log-status-success { color: #00ff99; }
         .log-status-fail { color: #ff0055; }
 
+        /* === CHECKBOX === */
+        .stCheckbox {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px dashed rgba(0, 255, 255, 0.3);
+            margin-top: 10px;
+            color: #fff;
+        }
+        .stCheckbox > label {
+            color: #e0e0e0;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
         /* Hiding Default Elements */
         #MainMenu, footer, header { visibility: hidden; }
         
@@ -264,10 +279,22 @@ def main():
                     remaining_items = total - current
                     est_remaining_time = avg_time_per_item * remaining_items
                     
-                    status_text.text(f"⏳ PROCESSING: {current}/{total} SEGMENTS ({percent}%)")
-                    timer_text.markdown(f"⏱️ ELAPSED: {elapsed_time:.1f}s | EST. REMAINING: {est_remaining_time:.1f}s")
+                    status_text.markdown(f"""
+                        <div class="glass-card" style="text-align:center; padding: 1rem; margin-top: 10px;">
+                            <div style="margin-bottom: 5px; color: #00c6ff; font-weight: bold; font-family: 'Orbitron', sans-serif;">
+                                ⏳ PROCESSING: {current}/{total} SEGMENTS ({percent}%)
+                            </div>
+                            <div style="font-size: 0.85rem; color: #a0a0ba;">
+                                ⏱️ ELAPSED: {elapsed_time:.1f}s | EST. REMAINING: {est_remaining_time:.1f}s
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
                 else:
-                    status_text.text("⏳ PROCESSING...")
+                    status_text.markdown("""
+                        <div class="glass-card" style="text-align:center; padding: 1rem; margin-top: 10px;">
+                            <div style="color: #a0a0ba;">⏳ INITIALIZING SEQUENCE...</div>
+                        </div>
+                    """, unsafe_allow_html=True)
 
             try:
                 # Clear previous result
