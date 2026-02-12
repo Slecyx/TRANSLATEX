@@ -243,15 +243,35 @@ def main():
     # Processing Logic
     if process_btn and uploaded_file:
         with st.empty():
-            st.markdown('<div class="glass-card" style="text-align:center;">Processing...</div>', unsafe_allow_html=True)
+            st.markdown('<div class="glass-card" style="text-align:center;">Initializing Protocol...</div>', unsafe_allow_html=True)
             progress_bar = st.progress(0)
             status_text = st.empty()
+            timer_text = st.empty()
             
             start_time = time.time()
+            
+            def update_progress(current, total):
+                if total == 0:
+                    percent = 0
+                else:
+                    percent = int((current / total) * 100)
+                
+                progress_bar.progress(min(percent, 100))
+                
+                elapsed_time = time.time() - start_time
+                if current > 0:
+                    avg_time_per_item = elapsed_time / current
+                    remaining_items = total - current
+                    est_remaining_time = avg_time_per_item * remaining_items
+                    
+                    status_text.text(f"⏳ PROCESSING: {current}/{total} SEGMENTS ({percent}%)")
+                    timer_text.markdown(f"⏱️ ELAPSED: {elapsed_time:.1f}s | EST. REMAINING: {est_remaining_time:.1f}s")
+                else:
+                    status_text.text("⏳ PROCESSING...")
+
             try:
                 status_text.text("⚡ NEURAL LINK ESTABLISHED")
                 time.sleep(0.3)
-                progress_bar.progress(20)
                 
                 # Save uploaded file
                 file_ext = uploaded_file.name.split('.')[-1].lower()
@@ -263,8 +283,8 @@ def main():
                 
                 # Translate
                 if file_ext == "pptx":
-                    result_path = translate_pptx(input_path, output_path, target_language)
-                    progress_bar.progress(60)
+                    result_path = translate_pptx(input_path, output_path, target_language, progress_callback=update_progress)
+                    progress_bar.progress(100)
                     if convert_to_pdf_opt:
                             status_text.text("📄 COMPILLING PDF ARTIFACT...")
                             pdf_path = output_path.replace('.pptx', '.pdf')
@@ -272,23 +292,26 @@ def main():
                             if converted_pdf:
                                 result_path = converted_pdf
                 elif file_ext == "pdf":
-                    result_path = translate_pdf(input_path, output_path, target_language)
+                    result_path = translate_pdf(input_path, output_path, target_language, progress_callback=update_progress)
                 elif file_ext == "docx":
-                    result_path = translate_docx(input_path, output_path, target_language)
+                    result_path = translate_docx(input_path, output_path, target_language, progress_callback=update_progress)
                 elif file_ext == "txt":
-                    result_path = translate_txt(input_path, output_path, target_language)
+                    result_path = translate_txt(input_path, output_path, target_language, progress_callback=update_progress)
                 elif file_ext == "xlsx":
-                        result_path = translate_xlsx(input_path, output_path, target_language)
+                    # XLSX support needs to be updated for callbacks, for now just pass without
+                    status_text.text("📊 PROCESSING SPREADSHEET DATA...")
+                    result_path = translate_xlsx(input_path, output_path, target_language) 
                 else:
                     raise ValueError("Unsupported Format")
 
                 progress_bar.progress(100)
-                status_text.text("✅ SEQUENCE COMPLETE")
+                total_duration = time.time() - start_time
+                status_text.text(f"✅ SEQUENCE COMPLETE ({total_duration:.1f}s)")
+                timer_text.empty()
                 time.sleep(0.5)
                 
                 # Add to history
-                duration = time.time() - start_time
-                add_to_history(uploaded_file.name, target_language.upper(), "SUCCESS", duration)
+                add_to_history(uploaded_file.name, target_language.upper(), "SUCCESS", total_duration)
 
                 # Prepare Download
                 with open(result_path, "rb") as f:
@@ -344,11 +367,4 @@ def main():
     st.markdown("<div style='text-align: center; color: #444; margin-top: 50px; font-size: 0.8em;'>SECURE TERMINAL ACCESS // ENCRYPTED</div>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
-    try:
-        from streamlit.web import cli as stcli
-        import sys
-        sys.argv = ["streamlit", "run", __file__]
-        sys.exit(stcli.main())
-    except ImportError:
-        # Fallback if they manage to run this without streamlit installed (unlikely but safe)
-        print("Lütfen sanal ortamı (venv) kullanarak çalıştırın: ./run.sh")
+    main()

@@ -24,11 +24,15 @@ def convert_pptx_to_pdf(pptx_path: str, output_pdf_path: str):
         print(f"Error converting PPTX to PDF: {e}")
         return None
 
-def translate_pptx(input_path: str, output_path: str, target_lang: str):
+def translate_pptx(input_path: str, output_path: str, target_lang: str, progress_callback=None):
     """Translates a PPTX file to the target language."""
     prs = Presentation(input_path)
     
-    for slide in prs.slides:
+    total_slides = len(prs.slides)
+    for i, slide in enumerate(prs.slides):
+        if progress_callback:
+            progress_callback(i + 1, total_slides)
+            
         for shape in slide.shapes:
             if not shape.has_text_frame:
                 continue

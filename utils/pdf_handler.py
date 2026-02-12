@@ -4,7 +4,7 @@ import subprocess
 import os
 from .translator import translate_text
 
-def translate_pdf(input_path: str, output_path: str, target_lang: str):
+def translate_pdf(input_path: str, output_path: str, target_lang: str, progress_callback=None):
     """
     Translates a PDF file to the target language via DOCX conversion.
     Returns the path to the final output file (PDF if possible, else DOCX).
@@ -21,13 +21,24 @@ def translate_pdf(input_path: str, output_path: str, target_lang: str):
     # Step 2: Translate DOCX content
     doc = Document(docx_path)
     
+    total_items = len(doc.paragraphs) + sum(len(table.rows) for table in doc.tables)
+    current_item = 0
+    
     for para in doc.paragraphs:
+        current_item += 1
+        if progress_callback and current_item % 5 == 0:
+             progress_callback(current_item, total_items)
+
         if para.text.strip():
             translated_text = translate_text(para.text, target_lang)
             para.text = translated_text
             
     for table in doc.tables:
         for row in table.rows:
+            current_item += 1
+            if progress_callback and current_item % 5 == 0:
+                 progress_callback(current_item, total_items)
+                 
             for cell in row.cells:
                 for para in cell.paragraphs:
                     if para.text.strip():
