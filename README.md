@@ -1,68 +1,61 @@
-# 🌍 TranslateX | AI-Powered Document Translator
+# 🌌 TranslateX Prime | Next-Gen AI Document Localization
 
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)
-![Streamlit](https://img.shields.io/badge/streamlit-1.28%2B-ff4b4b.svg)
 ![Status](https://img.shields.io/badge/status-active-success.svg)
 
-**TranslateX** is a state-of-the-art document translation tool designed for seamless, layout-preserving translations. Built with Python and Streamlit, it offers an "Ultra-Premium" user experience with a futuristic design.
+**TranslateX Prime** is the ultimate document translation tool, engineered for the future. Experience hyper-fast, AI-driven translations wrapped in a stunning, sci-fi inspired interface.
 
-## ✨ Features
+## ✨ Feature Matrix
 
-- **🎨 Ultra-Modern UI:** Glassmorphism design, animated interactions, and a dark-themed aesthetic.
-- **📄 Multi-Format Support:**
+- **🌌 Hyper-Premium UI:**  Interactive 3D-style backgrounds, neon aesthetics, and terminal-referenced typography.
+- **📄 Universal Format Support:**
   - **PDF** (Portable Document Format)
   - **PPTX** (PowerPoint Presentations)
   - **DOCX** (Word Documents)
   - **XLSX** (Excel Spreadsheets)
   - **TXT** (Plain Text)
-- **🧠 AI Translation:** Powered by Google Translate for accurate and context-aware translations.
-- **🔄 Smart Conversion:**
-  - Automatic PDF -> DOCX -> PDF workflow for layout preservation.
-  - Option to convert translated PPTX files to PDF.
-- **🌍 Global Reach:** Supports 10+ major languages including Turkish, English, German, French, Spanish, and more.
+- **🧠 Neural Translation Core:** Powered by advanced algorithms for context-aware localization in 10+ languages.
+- **🔄 Auto-Conversion Protocols:**
+  - Seamless PDF flow.
+  - Optional PPTX -> PDF rendering.
 
-## 🚀 Installation
+## 🚀 Deployment Protocols
 
-### Prerequisites
-- Python 3.8 or higher
-- [LibreOffice](https://www.libreoffice.org/) (Required for PDF conversions)
+### ☁️ One-Click Cloud Deployment
+You can deploy this repository directly to Streamlit Cloud:
 
-### Setup
+1.  Fork this repository to your GitHub.
+2.  Login to [Streamlit Cloud](https://share.streamlit.io/).
+3.  Click "New App" and select this repository.
+4.  **Done!** Your app is live in minutes.
 
-1.  **Clone the repository:**
+### 💻 Local Initialization
+
+1.  **Clone Data Repository:**
     ```bash
-    git clone https://github.com/yourusername/translatex.git
-    cd translatex
+    git clone https://github.com/yourusername/translatex-prime.git
+    cd translatex-prime
     ```
 
-2.  **Create a virtual environment:**
+2.  **Activate Virtual Environment:**
     ```bash
     python -m venv venv
-    source venv/bin/activate  # On Windows: venv\Scripts\activate
+    source venv/bin/activate  # Windows: venv\Scripts\activate
     ```
 
-3.  **Install dependencies:**
+3.  **Install Dependencies:**
     ```bash
     pip install -r requirements.txt
     ```
 
-## 🛠️ Usage
-
-1.  **Run the application:**
+4.  **Initiate System:**
     ```bash
     streamlit run app.py
     ```
-    *Or use the provided script:*
-    ```bash
-    ./run.sh
-    ```
 
-2.  **Navigate to** `http://localhost:8501` in your browser.
-
-3.  **Upload** your document, **Select** the target language, and **Translate**!
-
-## 📦 Dependencies
+## 📦 System Dependencies
 
 - `streamlit`
 - `deep-translator`
@@ -72,13 +65,13 @@
 - `openpyxl`
 - `opencv-python-headless`
 
-## 🤝 Contributing
+## 🤝 Contribution
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+System core is open for expansion. Pull Requests are welcome.
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License. See [LICENSE](LICENSE) for details.
 
 ---
-<p align="center">Made with ❤️ by Slecyx</p>
+<p align="center">System Architect: Slecyx // End of Line.</p>

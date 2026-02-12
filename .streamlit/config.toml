@@ -1,0 +1,15 @@
+[theme]
+base="dark"
+primaryColor="#00c6ff"
+backgroundColor="#000000"
+secondaryBackgroundColor="#0a0a14"
+textColor="#ffffff"
+font="sans serif"
+
+[server]
+headless = true
+enableCORS = false
+enableXsrfProtection = false
+
+[deprecation]
+showfileUploaderEncoding = "False"
