@@ -19,32 +19,38 @@ def translate_pdf(input_path: str, output_path: str, target_lang: str, progress_
     cv.close()
     
     # Step 2: Translate DOCX content
+    from .translator import batch_translate_texts, translate_text
     doc = Document(docx_path)
     
-    total_items = len(doc.paragraphs) + sum(len(table.rows) for table in doc.tables)
-    current_item = 0
+    translatables = []
     
     for para in doc.paragraphs:
-        current_item += 1
-        if progress_callback and current_item % 5 == 0:
-             progress_callback(current_item, total_items)
-
         if para.text.strip():
-            translated_text = translate_text(para.text, target_lang)
-            para.text = translated_text
+            translatables.append(para)
             
     for table in doc.tables:
         for row in table.rows:
-            current_item += 1
-            if progress_callback and current_item % 5 == 0:
-                 progress_callback(current_item, total_items)
-                 
             for cell in row.cells:
                 for para in cell.paragraphs:
                     if para.text.strip():
-                        translated_text = translate_text(para.text, target_lang)
-                        para.text = translated_text
+                        translatables.append(para)
                         
+    total_items = len(translatables)
+    if total_items > 0:
+        BATCH_SIZE = 20
+        for i in range(0, total_items, BATCH_SIZE):
+            batch = translatables[i:i+BATCH_SIZE]
+            texts = [item.text for item in batch]
+            
+            translated_texts = batch_translate_texts(texts, target_lang)
+            
+            for item, new_text in zip(batch, translated_texts):
+                item.text = new_text
+                
+            current_progress = min(i + BATCH_SIZE, total_items)
+            if progress_callback:
+                progress_callback(current_progress, total_items)
+                
     translated_docx_path = output_path.replace('.pdf', '_translated.docx')
     doc.save(translated_docx_path)
     

@@ -30,3 +30,18 @@ def translate_text(text: str, target_lang: str) -> str:
     except Exception as e:
         print(f"Error translating text: {e}")
         return text
+
+def batch_translate_texts(texts: list, target_lang: str, max_workers=10):
+    """
+    Translates a list of texts in parallel using ThreadPoolExecutor.
+    """
+    if not texts:
+        return []
+    
+    from concurrent.futures import ThreadPoolExecutor
+    
+    # We maintain order by mapping future to index or simply map
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        results = list(executor.map(lambda t: translate_text(t, target_lang), texts))
+        
+    return results
