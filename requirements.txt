@@ -1,0 +1,7 @@
+streamlit
+deep-translator
+python-pptx
+pdf2docx
+python-docx
+opencv-python-headless
+openpyxl
