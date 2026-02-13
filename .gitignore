@@ -126,9 +126,11 @@ dmypy.json
 .idea/
 
 # Custom
+temp_processing/
 *_translated.pptx
 *_translated.pdf
 *_translated.docx
 *_translated.txt
 *_translated.xlsx
-*.docx
+*.desktop
+
